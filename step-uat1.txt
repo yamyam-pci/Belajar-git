@@ -1,0 +1,23 @@
+# ===== STAGE 1: BUILD =====
+FROM maven:3.9.16-eclipse-temurin-25 AS build
+ARG JFROG_USER
+ARG JFROG_TOKEN
+ENV JFROG_USER=${JFROG_USER}
+ENV JFROG_TOKEN=${JFROG_TOKEN}
+WORKDIR /build
+# Copy source code
+COPY . .
+RUN apt-get update && apt-get install -y openssl ca-certificates
+RUN echo -n | openssl s_client -connect devartifactrepo.corp.bi.go.id:443 -servername devartifactrepo.corp.bi.go.id 2>/dev/null | openssl x509 > /tmp/bifast-artifactory.crt
+RUN keytool -import -trustcacerts -noprompt -alias bifast-artifactory -file /tmp/bifast-artifactory.crt -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit
+RUN mkdir -p ~/.m2
+RUN cp toolchains.xml ~/.m2/toolchains.xml
+RUN mvn clean package -DskipTests -s settings.xml
+# ===== STAGE 2: RUNTIME =====
+FROM maven:3.9.16-eclipse-temurin-25
+WORKDIR /app
+# Copy hasil build dari stage 1, BUKAN dari local target/
+COPY --from=build /build/target/*.jar app.jar
+COPY keystore.p12 keystore.p12
+EXPOSE 8081
+CMD ["java",  "-Duser.timezone=GMT+7", "-jar", "/app/app.jar", "--spring.config.additional-location=file:/config/"]
