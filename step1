@@ -1,6 +1,5 @@
 cara push image ke bitbucket dengan tujuan branch tertentu
 ===========================================================
-
 1. Clone Langsung ke Branch Tujuan (Cara Paling Aman)
 =====================================================
 > git clone --branch "nama-branch" --single-branch https://bitbucket.org/workspace/repo.git
@@ -14,12 +13,10 @@ cara push image ke bitbucket dengan tujuan branch tertentu
 ============================================================
 > git clone https://bitbucket.org/workspace/repo.git
 > cd repo
-
 > git fetch origin nama-branch
 > git checkout nama-branch
 # atau kalau branch belum ada secara lokal:
 > git checkout -b nama-branch origin/nama-branch
-
 # ... edit file ...
 > git add .
 > git commit -m "pesan commit"
